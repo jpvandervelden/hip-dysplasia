@@ -94,7 +94,6 @@ def statistics(df, source, target):
 
 
 def plot_start_graph(graph_string, child_registration):
-    graph_string += '# Graph for ' + child_registration + '\n\n'
     graph_string += '```mermaid\n    graph TD\n'
     return graph_string
 
@@ -105,81 +104,87 @@ def plot_end_graph(graph_string):
 
 def plot_results_graph(graph_string,
                        child,
+                       child_registration,
                        child_results_num,
                        sire,
+                       sire_registration,
                        sire_results_num,
                        dam,
+                       dam_registration,
                        dam_results_num):
-    graph_string += '    ' + child + '['+ child + ' ' + str(child_results_num) + ']-->' + sire + '[' + sire + ' ' + str(sire_results_num) + ']\n'
-    graph_string += '    ' + child + '-->' + dam + '[' + dam + ' ' + str(dam_results_num) + ']\n'
+    graph_string += '    ' + child + '['+ child + ' ' + child_registration + ' '+ str(child_results_num) + ']-->' + sire + '[' + sire + ' ' + sire_registration +  ' ' + str(sire_results_num) + ']\n'
+    graph_string += '    ' + child + '-->' + dam + '[' + dam + ' ' + dam_registration + ' ' + str(dam_results_num) + ']\n'
     return graph_string
 
 
 if __name__ == '__main__':
-    # load OFA.csv file as dataframe
-    df = pd.read_csv('OFA.csv')
+    #name = 'OFA_Border_Collie'
+    name = 'OFA_BOUVIER_DES_FLANDRES'
+    file_name = name + '.csv'
+    df = pd.read_csv(file_name)
     df = map_results(df)
 
     for parent in ['Sire', 'Dam', 'Sire_Sire', 'Sire_Dam', 'Dam_Sire', 'Dam_Dam']:
         df = derive_parents_results_num(df, parent)
         for target_column in ['Sire', 'Dam']:
             df = preprocess_parent_data(df, parent, target_column)
-    df.to_csv('OFA_num_1.csv', index=False)
+    df.to_csv(name + '_num_1.csv', index=False)
 
     for parent in ['Sire_Sire_Sire', 'Sire_Sire_Dam', 'Sire_Dam_Sire', 'Sire_Dam_Dam', 'Dam_Sire_Sire', 'Dam_Sire_Dam', 'Dam_Dam_Sire', 'Dam_Dam_Dam']:
          df = derive_parents_results_num(df, parent)
-    df.to_csv('OFA_num_2.csv', index=False)
-
-    for source in ['Registration']:
-        for target in ['Sire', 'Dam', 'Sire_Sire', 'Sire_Dam', 'Dam_Sire', 'Dam_Dam', 'Sire_Sire_Sire', 'Sire_Sire_Dam', 'Sire_Dam_Sire', 'Sire_Dam_Dam', 'Dam_Sire_Sire', 'Dam_Sire_Dam', 'Dam_Dam_Sire', 'Dam_Dam_Dam']:
-            statistics(df, source, target)
+    df.to_csv(name + '_num_2.csv', index=False)
 
     ancestor_list = [
-                        [ 'Registration', 'Sire', 'Dam' ],
-                        [ 'Sire', 'Sire_Sire', 'Sire_Dam' ],
-                        [ 'Dam', 'Dam_Sire', 'Dam_Dam' ],
-                        [ 'Sire_Sire', 'Sire_Sire_Sire', 'Sire_Sire_Dam' ],
-                        [ 'Sire_Dam', 'Sire_Dam_Sire', 'Sire_Dam_Dam' ],
-                        [ 'Dam_Sire', 'Dam_Sire_Sire', 'Dam_Sire_Dam' ],
-                        [ 'Dam_Dam', 'Dam_Dam_Sire', 'Dam_Dam_Dam' ]
+                     'Sire', 'Dam',
+                     'Sire_Sire', 'Sire_Dam',
+                     'Dam_Sire', 'Dam_Dam',
+                     'Sire_Sire_Sire', 'Sire_Sire_Dam',
+                     'Sire_Dam_Sire', 'Sire_Dam_Dam',
+                     'Dam_Sire_Sire', 'Dam_Sire_Dam',
+                     'Dam_Dam_Sire', 'Dam_Dam_Dam'
                     ]
-                                 
-    for ancestor in ancestor_list:
-        df = average_parent_data(df, ancestor[0], ancestor[1] + '_Results_Num', ancestor[2] + '_Results_Num')
 
-    # columns_to_check = ['Sire', 'Dam', 'Sire_Sire', 'Sire_Dam', 'Dam_Sire', 'Dam_Dam', 'Sire_Sire_Sire', 'Sire_Sire_Dam', 'Sire_Dam_Sire', 'Sire_Dam_Dam', 'Dam_Sire_Sire', 'Dam_Sire_Dam', 'Dam_Dam_Sire', 'Dam_Dam_Dam']
-    # df_filtered = df[df[columns_to_check].notnull().all(axis=1)]
-    # print("DataFrame after removing rows where all specified columns are filled:")
-    # print("complete records with filled in references: ", df_filtered.shape[0])
-    # df_filtered.to_csv('OFA_num_3.csv', index=False)
+    for source in ['Registration']:
+        for target in ancestor_list:
+            statistics(df, source, target)
+
+    ancestor_relation_list = [
+                                [ 'Registration', 'Sire', 'Dam' ],
+                                [ 'Sire', 'Sire_Sire', 'Sire_Dam' ],
+                                [ 'Dam', 'Dam_Sire', 'Dam_Dam' ],
+                                [ 'Sire_Sire', 'Sire_Sire_Sire', 'Sire_Sire_Dam' ],
+                                [ 'Sire_Dam', 'Sire_Dam_Sire', 'Sire_Dam_Dam' ],
+                                [ 'Dam_Sire', 'Dam_Sire_Sire', 'Dam_Sire_Dam' ],
+                                [ 'Dam_Dam', 'Dam_Dam_Sire', 'Dam_Dam_Dam' ]
+                            ]
+                                 
+    for ancestor in ancestor_relation_list:
+        df = average_parent_data(df, ancestor[0], ancestor[1] + '_Results_Num', ancestor[2] + '_Results_Num')
 
     columns_to_check = ['Sire_Results_Num', 'Dam_Results_Num', 'Sire_Sire_Results_Num', 'Sire_Dam_Results_Num', 'Dam_Sire_Results_Num', 'Dam_Dam_Results_Num', 'Sire_Sire_Sire_Results_Num', 'Sire_Sire_Dam_Results_Num', 'Sire_Dam_Sire_Results_Num', 'Sire_Dam_Dam_Results_Num', 'Dam_Sire_Sire_Results_Num', 'Dam_Sire_Dam_Results_Num', 'Dam_Dam_Sire_Results_Num', 'Dam_Dam_Dam_Results_Num'] 
     df_filtered = df[df[columns_to_check].notnull().all(axis=1)]
     print("DataFrame after removing rows where all specified columns are filled:")
     print("complete records with Results_Num: ", df_filtered.shape[0])
-    df_filtered.to_csv('OFA_num_3.csv', index=False)
+    df_filtered.to_csv(name + '_num_3.csv', index=False)
 
     graph_string = ''
     for count, row in df_filtered.iterrows():
         graph_string = plot_start_graph(graph_string, row['Registration'])
-        for ancestor in ancestor_list:
+        for ancestor in ancestor_relation_list:
             graph_string = plot_results_graph(graph_string,
                                               ancestor[0],
+                                              row[ancestor[0]],
                                               row[ancestor[0] + '_Results_Num'],
                                               ancestor[1],
+                                              row[ancestor[1]],
                                               row[ancestor[1] + '_Results_Num'],
                                               ancestor[2],
+                                              row[ancestor[2]],
                                               row[ancestor[2] + '_Results_Num'])
         graph_string = plot_end_graph(graph_string)
 
     #write graph to file
-    with open('graph.md', 'w') as f:
+    with open(name + '_graph.md', 'w') as f:
         f.write(graph_string)    
-
-    # Convert the markdown (including the mermaid graphs) file to a pdf file
-    # pandoc -o graph.pdf graph.md
     
-
-    # df = average_values(df)
-    # df.to_csv('OFA_num_3.csv', index=False)
 
