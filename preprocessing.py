@@ -118,8 +118,8 @@ def plot_results_graph(graph_string,
 
 
 if __name__ == '__main__':
-    #name = 'OFA_Border_Collie'
-    name = 'OFA_BOUVIER_DES_FLANDRES'
+    name = 'OFA_Border_Collie'
+    #name = 'OFA_BOUVIER_DES_FLANDRES'
     file_name = name + '.csv'
     df = pd.read_csv(file_name)
     df = map_results(df)
@@ -167,6 +167,7 @@ if __name__ == '__main__':
     print("complete records with Results_Num: ", df_filtered.shape[0])
     df_filtered.to_csv(name + '_num_3.csv', index=False)
 
+    file_counter = 1
     graph_string = ''
     for count, row in df_filtered.iterrows():
         graph_string = plot_start_graph(graph_string, row['Registration'])
@@ -182,9 +183,14 @@ if __name__ == '__main__':
                                               row[ancestor[2]],
                                               row[ancestor[2] + '_Results_Num'])
         graph_string = plot_end_graph(graph_string)
+        # write graph to file every 100 records
+        if count % 100 == 0:
+            #write graph to file
+            with open(name + '_' + str(file_counter) + '_graph.md', 'w') as f:
+                f.write(graph_string)
+            graph_string = ''
+            file_counter += 1
 
-    #write graph to file
-    with open(name + '_graph.md', 'w') as f:
-        f.write(graph_string)    
-    
+    with open(name + '_' + str(file_counter) + '_graph.md', 'w') as f:
+        f.write(graph_string)
 
